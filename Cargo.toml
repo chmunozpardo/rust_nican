@@ -1,0 +1,20 @@
+[package]
+name = "nican_rust"
+version = "0.1.0"
+edition = "2021"
+build = "src/build.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+gcc = "0.3"
+bindgen = "0.59.2"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+tokio-stream = "0.1.6"
+warp = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+futures = { version = "0.3", default-features = false }
+uuid = { version = "1.0.0", features = ["serde", "v4"] }
