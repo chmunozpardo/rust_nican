@@ -1,4 +1,4 @@
-use std::mem;
+#![allow(dead_code)]
 
 pub type AmbChannel = u64;
 pub type AmbNodeAddr = u64;
@@ -28,7 +28,7 @@ pub enum AmbTransaction_t {
     AMB_BLOCK_REQUEST,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum AmbErrorCode_t {
     AMBERR_NOERR,
     AMBERR_CONTINUE,
@@ -47,6 +47,7 @@ pub enum AmbErrorCode_t {
 }
 
 /* Node types that may be in a CAN bus */
+#[derive(Debug, Copy, Clone)]
 pub enum AmbNodeType_t {
     UNKNOWN_NODE_TYPE = 0, // Older correlator firmware and AMB do not support node types
     MIN_NODE_TYPE = 0x0f,  // Non-inclusive lower bound of slave types
@@ -75,9 +76,9 @@ pub struct AmbCompletion_t {
 
 #[derive(Debug, Copy, Clone)]
 pub struct AmbResponse_t {
-    pub completion_p: *mut AmbCompletion_t, //   Completion Address
-    pub channel: AmbChannel,                //  Channel Address
-    pub address: AmbAddr,                   //  AMB Address
+    pub completion_p: AmbCompletion_t, //   Completion Address
+    pub channel: AmbChannel,           //  Channel Address
+    pub address: AmbAddr,              //  AMB Address
     pub typeN: AmbNodeType, //  Type of node responding (when applicable, ignored otherwise)
     pub status: AmbErrorCode_t, //  Status flag 0 if successful
     pub dataLen: AmbDataLength_t, //  Length of returned data

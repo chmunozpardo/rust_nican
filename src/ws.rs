@@ -1,13 +1,11 @@
-use crate::{CANData, Client, Clients};
+use crate::{Client, Clients};
 use futures::{FutureExt, StreamExt};
-use std::ptr;
 use tokio::sync::mpsc;
-use tokio::time::*;
 use tokio_stream::wrappers::UnboundedReceiverStream;
 use uuid::Uuid;
-use warp::ws::{Message, WebSocket};
+use warp::ws::WebSocket;
 
-pub async fn client_connection(ws: WebSocket, data: CANData, clients: Clients) {
+pub async fn client_connection(ws: WebSocket, clients: Clients) {
     println!("establishing client connection... {:?}", ws);
     let (client_ws_sender, mut client_ws_rcv) = ws.split();
     let (client_sender, client_rcv) = mpsc::unbounded_channel();
@@ -23,12 +21,6 @@ pub async fn client_connection(ws: WebSocket, data: CANData, clients: Clients) {
         sender: Some(client_sender),
     };
     clients.lock().await.insert(uuid.clone(), new_client);
-    let mut test = [0; 8];
-    {
-        let mut qwer = data.lock().unwrap();
-        test = (*qwer).Data;
-    }
-    client_msg(Message::text(format!("{:x?}", test)), &clients).await;
 
     while let Some(result) = client_ws_rcv.next().await {
         let msg = match result {
@@ -38,21 +30,8 @@ pub async fn client_connection(ws: WebSocket, data: CANData, clients: Clients) {
                 break;
             }
         };
-        client_msg(msg, &clients).await;
+        println!("{:?}", msg);
     }
     clients.lock().await.remove(&uuid);
     println!("{} disconnected", uuid);
-}
-
-async fn client_msg(msg: Message, clients: &Clients) {
-    let message = match msg.to_str() {
-        Ok(v) => v,
-        Err(_) => return,
-    };
-    let locked = clients.lock().await;
-    for it in locked.values() {
-        println!("sending message");
-        let _ = it.sender.as_ref().unwrap().send(Ok(Message::text(message)));
-    }
-    return;
 }
